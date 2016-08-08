@@ -50,7 +50,7 @@
 
 #define MINSPEED                    20
 #define MAXSPEED                    250
-#define SPEEDINCR                   20
+#define SPEEDINCR                   10
 
 #define STARTDELAYMS                6000
 
@@ -96,124 +96,124 @@
 	Sensor settings
 */
 
-#define	MAX_NUMBER_AREA_READINGS		36
+#define	MAX_NUMBER_AREA_READINGS		  36
 
-#define	IR_PIN_BASE						6			//	Analog 6
-#define	PING_PIN_BASE					24			//	Digital 24
-#define PIR_MOTION_PIN_BASE				30 			//	Digital 30
+#define	IR_PIN_BASE						        6			  //	Analog 6
+#define	PING_PIN_BASE					        24			//	Digital 24
+#define PIR_MOTION_PIN_BASE				    30 			//	Digital 30
 
-#define	MAX_NUMBER_PING					1
+#define	MAX_NUMBER_PING					      1
 
-#define	PING_FRONT_CENTER				0
-#define	PING_FRONT_LEFT					1
-#define	PING_FRONT_RIGHT				2
+#define	PING_FRONT_CENTER				      0
+#define	PING_FRONT_LEFT					      1
+#define	PING_FRONT_RIGHT				      2
 
-#define MAX_NUMBER_PIR_MOTION			2
+#define MAX_NUMBER_PIR_MOTION			    2
 
-#define	PIR_FRONT_LEFT					0
-#define	PIR_FRONT_RIGHT					1
-#define	PIR_BACK_LEFT					2
-#define	PIR_BACK_RIGHT					3
+#define	PIR_FRONT_LEFT					      0
+#define	PIR_FRONT_RIGHT					      1
+#define	PIR_BACK_LEFT					        2
+#define	PIR_BACK_RIGHT					      3
 
-#define	MAX_NUMBER_IR					1
+#define	MAX_NUMBER_IR					        1
 
-#define	IR_FRONT_CENTER					0
-#define	IR_BACK_CENTER					1
-#define	IR_BACK_LEFT					2
-#define	IR_BACK_RIGHT					3
+#define	IR_FRONT_CENTER					      0
+#define	IR_BACK_CENTER					      1
+#define	IR_BACK_LEFT					        2
+#define	IR_BACK_RIGHT					        3
 
 //	RoboClaw 2x5 Motor Controller Packet Serial constants
-#define	ROBOCLAW_CONTROLLERS			1
-#define	ROBOCLAW_SERIAL_BASE_ADDR		0x80
+#define	ROBOCLAW_CONTROLLERS			    1
+#define	ROBOCLAW_SERIAL_BASE_ADDR		  0x80
 
-#define	ROBOCLAW_KP						1.0
-#define	ROBOCLAW_KI						0.5
-#define	ROBOCLAW_KD						0.25
-#define	ROBOCLAW_QPPS					44000
+#define	ROBOCLAW_KP						        1.0
+#define	ROBOCLAW_KI						        0.5
+#define	ROBOCLAW_KD						        0.25
+#define	ROBOCLAW_QPPS					        44000
 
-#define ROBOCLAW_MOTOR_LEFT_NAME		"Left"
-#define ROBOCLAW_MOTOR_RIGHT_NAME		"Right"
-#define ROBOCLAW_MOTOR_FRONT_NAME		"Front"
-#define ROBOCLAW_MOTOR_BACK_NAME		"Back"
+#define ROBOCLAW_MOTOR_LEFT_NAME		  "Left"
+#define ROBOCLAW_MOTOR_RIGHT_NAME		  "Right"
+#define ROBOCLAW_MOTOR_FRONT_NAME		  "Front"
+#define ROBOCLAW_MOTOR_BACK_NAME		  "Back"
 
 //  For SoftI2CMaster
-#define	SOFT_I2C_SDA_PIN				2
-#define	SOFT_I2C_SCL_PIN				3
+#define	SOFT_I2C_SDA_PIN				      2
+#define	SOFT_I2C_SCL_PIN				      3
 
 /*
 	Hardware Serial ports
 */
 //	Serial:	Console and Debug port
-#define	SERIAL_CONSOLE_RX_PIN			0
-#define	SERIAL_CONSOLE_TX_PIN			1
+#define	SERIAL_CONSOLE_RX_PIN			    0
+#define	SERIAL_CONSOLE_TX_PIN			    1
 
 //	Serial1: RoboClaw 2x5 Motor Controller
-#define	SERIAL_ROBOCLAW_RX_PIN			19
-#define	SERIAL_ROBOCLAW_TX_PIN			18
+#define	SERIAL_ROBOCLAW_RX_PIN			  19
+#define	SERIAL_ROBOCLAW_TX_PIN			  18
 
 //	Serial2: SSC-32 Servo Controller
-#define	SERIAL_SSC32_RX_PIN				17
-#define	SERIAL_SSC32_TX_PIN				16
+#define	SERIAL_SSC32_RX_PIN				    17
+#define	SERIAL_SSC32_TX_PIN				    16
 
 //	Serial3: XBee Wireless Mesh Networking
-#define	SERIAL_XBEE_RX_PIN				15
-#define	SERIAL_XBEE_TX_PIN				14
+#define	SERIAL_XBEE_RX_PIN				    15
+#define	SERIAL_XBEE_TX_PIN				    14
 
 /*
 	The following settings apply to the SSC-32 servo controller
 */
-#define SCAN_SENSOR_DELAY				350
+#define SCAN_SENSOR_DELAY				      350
 
-#define	SERVO_MOTOR_LEFT_PIN			4
-#define	SERVO_MOTOR_LEFT_ADJUST	        0
-#define	SERVO_MOTOR_LEFT_MIN			1000
-#define	SERVO_MOTOR_LEFT_MAX			2000
+#define	SERVO_MOTOR_LEFT_PIN			    4
+#define	SERVO_MOTOR_LEFT_ADJUST	      0
+#define	SERVO_MOTOR_LEFT_MIN			    1000
+#define	SERVO_MOTOR_LEFT_MAX			    2000
 
 #define	SERVO_MOTOR_RIGHT_PIN	        5
-#define	SERVO_MOTOR_RIGHT_ADJUST        0
-#define	SERVO_MOTOR_RIGHT_MIN			1000
-#define	SERVO_MOTOR_RIGHT_MAX			2000
+#define	SERVO_MOTOR_RIGHT_ADJUST      0
+#define	SERVO_MOTOR_RIGHT_MIN			    1000
+#define	SERVO_MOTOR_RIGHT_MAX			    2000
 
-#define	SERVO_MOTOR_NEUTRAL				1500
+#define	SERVO_MOTOR_NEUTRAL				    1500
 
-#define	SERVO_MAX_DEGREES				90
-#define SERVO_INVALID_DEGREES			9999
-#define	SERVO_CENTER_MS					1500
+#define	SERVO_MAX_DEGREES				      90
+#define SERVO_INVALID_DEGREES			    9999
+#define	SERVO_CENTER_MS					      1500
 
-#define	SERVO_GRIP_LIFT_PIN				0
-#define SERVO_GRIP_LIFT_NAME			"GripLift"
-#define	SERVO_GRIP_LIFT_HOME			650
-#define	SERVO_GRIP_LIFT_OFFSET			-90
-#define	SERVO_GRIP_LIFT_MIN				500
-#define	SERVO_GRIP_LIFT_MAX				2500
+#define	SERVO_GRIP_LIFT_PIN				    0
+#define SERVO_GRIP_LIFT_NAME			    "GripLift"
+#define	SERVO_GRIP_LIFT_HOME			    650
+#define	SERVO_GRIP_LIFT_OFFSET			  -90
+#define	SERVO_GRIP_LIFT_MIN				    500
+#define	SERVO_GRIP_LIFT_MAX				    2500
 
-#define	SERVO_GRIP_WRIST_PIN			1
-#define SERVO_GRIP_WRIST_NAME			"GripWrist"
-#define	SERVO_GRIP_WRIST_HOME			600
-#define	SERVO_GRIP_WRIST_OFFSET			0
-#define	SERVO_GRIP_WRIST_MIN			500
-#define	SERVO_GRIP_WRIST_MAX			2500
+#define	SERVO_GRIP_WRIST_PIN			    1
+#define SERVO_GRIP_WRIST_NAME			    "GripWrist"
+#define	SERVO_GRIP_WRIST_HOME			    600
+#define	SERVO_GRIP_WRIST_OFFSET			  0
+#define	SERVO_GRIP_WRIST_MIN			    500
+#define	SERVO_GRIP_WRIST_MAX			    2500
 
-#define	SERVO_GRIP_GRAB_PIN				2
-#define SERVO_GRIP_GRAB_NAME			"GripGrab"
-#define	SERVO_GRIP_GRAB_HOME			2500
-#define	SERVO_GRIP_GRAB_OFFSET			0
-#define	SERVO_GRIP_GRAB_MIN				500
-#define	SERVO_GRIP_GRAB_MAX				2500
+#define	SERVO_GRIP_GRAB_PIN				    2
+#define SERVO_GRIP_GRAB_NAME			    "GripGrab"
+#define	SERVO_GRIP_GRAB_HOME			    2500
+#define	SERVO_GRIP_GRAB_OFFSET			  0
+#define	SERVO_GRIP_GRAB_MIN				    500
+#define	SERVO_GRIP_GRAB_MAX				    2500
 
-#define	SERVO_PAN_PIN					0
-#define SERVO_PAN_NAME					"Pan"
-#define SERVO_PAN_HOME					SERVO_CENTER_MS
-#define	SERVO_PAN_OFFSET				0
-#define	SERVO_PAN_LEFT_MIN				500
-#define	SERVO_PAN_RIGHT_MAX				2400
+#define	SERVO_PAN_PIN					        0
+#define SERVO_PAN_NAME					      "Pan"
+#define SERVO_PAN_HOME					      SERVO_CENTER_MS
+#define	SERVO_PAN_OFFSET				      0
+#define	SERVO_PAN_LEFT_MIN				    500
+#define	SERVO_PAN_RIGHT_MAX				    2400
 
-#define	SERVO_TILT_PIN					1
-#define SERVO_TILT_NAME					"Tilt"
-#define SERVO_TILT_HOME					SERVO_CENTER_MS
-#define	SERVO_TILT_OFFSET				-135
-#define	SERVO_TILT_DOWN_MIN				500
-#define	SERVO_TILT_UP_MAX				2000
+#define	SERVO_TILT_PIN					      1
+#define SERVO_TILT_NAME					      "Tilt"
+#define SERVO_TILT_HOME					      SERVO_CENTER_MS
+#define	SERVO_TILT_OFFSET				      -135
+#define	SERVO_TILT_DOWN_MIN				    500
+#define	SERVO_TILT_UP_MAX				      2000
 
 /*********************************************************
 	Structs for data we store on various onboard devices
@@ -225,7 +225,7 @@ struct AreaScanReading {
 	struct ColorSensor *colorData;
 	struct HeatSensor *heatData;
 
-	int positionDeg;
+	uint8_t positionDeg;
 };
 
 enum Distance {
