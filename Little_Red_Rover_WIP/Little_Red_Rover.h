@@ -43,14 +43,15 @@
 #define BLINKVBAT                   150
 #define VBAT_ENABLED                false
 #define VBAT_PIN                    A7
-#define VBAT_MIN                    3.55
+#define VBAT_MIN                    (3.55)
 
 #define MINUTEMS                    60000
 #define WAITMIN                     5
 
-#define MINSPEED                    20
+#define MINSPEED                    10
 #define MAXSPEED                    250
 #define SPEEDINCR                   10
+#define TURNINCR                    30
 
 #define STARTDELAYMS                6000
 

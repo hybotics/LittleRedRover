@@ -22,6 +22,8 @@
   18-Jul-2016:
   > Added switch to toggle between Autonomous Operation and Manual
       Control. This was a pretty extensive modification.
+  08-Aug-2016:
+  > Added a pivotMode to switch between pivoting and gradual turning
 *********************************************************************/
 
 #include <Arduino.h>
@@ -72,10 +74,13 @@ bool isMoving = false;
 
 bool modeToggle = false;
 
-byte leftMSpeed = MAXSPEED / 4;
-byte rightMSpeed = MAXSPEED / 4;
+uint8_t leftMSpeed = MAXSPEED / 4;
+uint8_t rightMSpeed = MAXSPEED / 4;
+uint8_t lastLeftSpeed = leftMSpeed;
+uint8_t lastRightSpeed = rightMSpeed;
 
 bool autonomous = false;
+bool pivoting = true;
 
 byte lastButton = 0;
 uint8_t buttonNumber = 0;
@@ -281,6 +286,8 @@ bool buttonMode() {
   static unsigned long lastPress = 0;
 
   if (buttonPressed) {
+    lastLeftSpeed = leftMSpeed;
+    lastRightSpeed = rightMSpeed;
 #if DEBUG
     Serial.print(F("In: Moving = "));
     Serial.print(isMoving);
@@ -298,8 +305,13 @@ bool buttonMode() {
         break;
 
       case 2:
+        pivoting = !pivoting;
 #if DEBUG
-        Serial.println(F("*** Unassigned"));
+        if (pivoting) {
+         Serial.println(F("*** Pivoting to turn"));
+        } else {
+         Serial.println(F("*** Gradual turning"));
+        }
 #endif
         break;
 
@@ -359,12 +371,22 @@ bool buttonMode() {
         break;
     
       case 7:
-        stopMotors(250);
+        if (pivoting) {
+          stopMotors(250);
+          
+          L_MOTOR->run(BACKWARD);
+          R_MOTOR->run(FORWARD);
+
+          isMoving = false;
+        } else {
+          speedCheck = MAXSPEED - TURNINCR;
         
-        L_MOTOR->run(BACKWARD);
-        R_MOTOR->run(FORWARD);
-      
-        isMoving = false;
+          if (rightMSpeed < speedCheck) {
+            rightMSpeed += 30;
+          }
+        
+          isMoving = false;
+        }
   
 #if DEBUG
         Serial.println(F("*** Turning LEFT"));
@@ -372,12 +394,22 @@ bool buttonMode() {
         break;
       
       case 8:
-        stopMotors(250);
-
-        L_MOTOR->run(FORWARD);
-        R_MOTOR->run(BACKWARD);
-      
-        isMoving = false;
+        if (pivoting) {
+          stopMotors(250);
+  
+          L_MOTOR->run(FORWARD);
+          R_MOTOR->run(BACKWARD);
+        
+          isMoving = false;
+        } else {
+          speedCheck = MAXSPEED - TURNINCR;
+        
+          if (leftMSpeed < speedCheck) {
+            leftMSpeed += 30;
+          }
+        
+          isMoving = false;
+        }
   
 #if DEBUG
          Serial.println(F("*** Turning RIGHT"));
@@ -400,12 +432,19 @@ bool buttonMode() {
 #endif
 
     // Don't set motor speed unless changing directon
-    if ((buttonNumber == 5) or (buttonNumber == 6)) {
+    if (((pivoting) and ((buttonNumber == 5) or (buttonNumber == 6))) or
+        ((!pivoting) and ((buttonNumber == 7) or (buttonNumber == 8)))) {
 #if DEBUG
       Serial.println(F("Setting motor speed"));
 #endif
       L_MOTOR->setSpeed(leftMSpeed);
       R_MOTOR->setSpeed(rightMSpeed);
+    }
+
+    // Restore normal speed
+    if ((!pivoting) and ((buttonNumber == 7) or (buttonNumber == 8))) {
+      leftMSpeed = lastLeftSpeed;
+      rightMSpeed = lastRightSpeed;
     }
 
     return true;
