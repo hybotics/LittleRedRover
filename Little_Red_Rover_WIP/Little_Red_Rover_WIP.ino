@@ -291,9 +291,11 @@ bool buttonMode() {
 #if DEBUG
     Serial.print(F("In: Moving = "));
     Serial.print(isMoving);
+    Serial.print(F(", pivoting = "));
+    Serial.print(pivoting);
     Serial.print(F(", buttonPressed = "));
     Serial.print(buttonPressed);
-    Serial.print(F(", Button = "));
+    Serial.print(F(", buttonNumber = "));
     Serial.println(buttonNumber);
 #endif
 
@@ -331,7 +333,7 @@ bool buttonMode() {
       case 5:
         speedCheck = MAXSPEED - SPEEDINCR;
       
-        if (isMoving and (leftMSpeed < speedCheck) and (rightMSpeed < speedCheck)) {
+        if (isMoving and pivoting and (leftMSpeed < speedCheck) and (rightMSpeed < speedCheck)) {
           leftMSpeed += SPEEDINCR;
           rightMSpeed += SPEEDINCR;
 
@@ -352,7 +354,7 @@ bool buttonMode() {
       case 6:
         speedCheck = MINSPEED + SPEEDINCR;
       
-        if (isMoving and (leftMSpeed > speedCheck) and (rightMSpeed > speedCheck)) {
+        if (isMoving and pivoting and (leftMSpeed > speedCheck) and (rightMSpeed > speedCheck)) {
           leftMSpeed -= SPEEDINCR;
           rightMSpeed -= SPEEDINCR;
   
@@ -376,18 +378,16 @@ bool buttonMode() {
           
           L_MOTOR->run(BACKWARD);
           R_MOTOR->run(FORWARD);
-
-          isMoving = false;
         } else {
           speedCheck = MAXSPEED - TURNINCR;
         
           if (rightMSpeed < speedCheck) {
             rightMSpeed += 30;
           }
-        
-          isMoving = false;
         }
-  
+
+        isMoving = true;
+
 #if DEBUG
         Serial.println(F("*** Turning LEFT"));
 #endif
@@ -408,7 +408,7 @@ bool buttonMode() {
             leftMSpeed += 30;
           }
         
-          isMoving = false;
+          isMoving = true;
         }
   
 #if DEBUG
@@ -423,7 +423,8 @@ bool buttonMode() {
 #if DEBUG
     Serial.print(F("Out: Moving = "));
     Serial.println(isMoving);
-  
+    Serial.print(F(", pivoting = "));
+    Serial.print(pivoting);
     Serial.print(F("Speed: Left = "));
     Serial.print(leftMSpeed);
     Serial.print(F(", Right = "));
@@ -431,7 +432,7 @@ bool buttonMode() {
     Serial.println();
 #endif
 
-    // Don't set motor speed unless changing directon
+    // Don't set motor speed unless changing directon or gradual turn
     if (((pivoting) and ((buttonNumber == 5) or (buttonNumber == 6))) or
         ((!pivoting) and ((buttonNumber == 7) or (buttonNumber == 8)))) {
 #if DEBUG
