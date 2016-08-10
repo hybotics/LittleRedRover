@@ -386,7 +386,7 @@ bool buttonMode() {
           }
         }
 
-        isMoving = true;
+        isMoving = false;
 
 #if DEBUG
         Serial.println(F("*** Turning LEFT"));
