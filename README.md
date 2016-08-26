@@ -1,2 +1,6 @@
-## Adafruit Bluefruit LE Feather Robot Rover
-Build & control an RC car with a smart phone! Follow the Adafruit learn guide here: https://learn.adafruit.com/bluefruit-feather-robot !
+Adafruit's Bluefruit LE Feather Robot Rover
+
+Directories:
+	LittleRedRover				Current stable code.
+	LittleRedRover_Original		Adafruit's original code.
+	LittleRedRover_WIP			The latest and greatest code - some stuff may not work
