@@ -29,6 +29,10 @@
 #define strncasecmp_P(f1, f2, len) strncasecmp((f1), (f2), (len))
 #endif
 
+#define ADAFRUIT_MQTT_VERSION_MAJOR 0
+#define ADAFRUIT_MQTT_VERSION_MINOR 16
+#define ADAFRUIT_MQTT_VERSION_PATCH 1
+
 // Uncomment/comment to turn on/off debug output messages.
 //#define MQTT_DEBUG
 // Uncomment/comment to turn on/off error output messages.
@@ -108,12 +112,16 @@
 // eg max-subscription-payload-size
 #define SUBSCRIPTIONDATALEN 20
 
+class AdafruitIO_Feed;  // forward decl
+
 //Function pointer that returns an int
 typedef void (*SubscribeCallbackUInt32Type)(uint32_t);
 // returns a double
 typedef void (*SubscribeCallbackDoubleType)(double);
 // returns a chunk of raw data
 typedef void (*SubscribeCallbackBufferType)(char *str, uint16_t len);
+// returns an io data wrapper instance
+typedef void (AdafruitIO_Feed::*SubscribeCallbackIOType)(char *str, uint16_t len);
 
 extern void printBuffer(uint8_t *buffer, uint16_t len);
 
@@ -126,19 +134,11 @@ class Adafruit_MQTT {
                 const char *cid,
                 const char *user,
                 const char *pass);
-  Adafruit_MQTT(const __FlashStringHelper *server,
-                uint16_t port,
-                const __FlashStringHelper *cid,
-                const __FlashStringHelper *user,
-                const __FlashStringHelper *pass);
+
   Adafruit_MQTT(const char *server,
                 uint16_t port,
-                const char *user,
-                const char *pass);
-  Adafruit_MQTT(const __FlashStringHelper *server,
-                uint16_t port,
-                const __FlashStringHelper *user,
-                const __FlashStringHelper *pass);
+                const char *user = "",
+                const char *pass = "");
   virtual ~Adafruit_MQTT() {}
 
   // Connect to the MQTT server.  Returns 0 on success, otherwise an error code
@@ -153,6 +153,7 @@ class Adafruit_MQTT {
   // Use connectErrorString() to get a printable string version of the
   // error.
   int8_t connect();
+  int8_t connect(const char *user, const char *pass);
 
   // Return a printable string version of the error code returned by
   // connect(). This returns a __FlashStringHelper*, which points to a
@@ -170,19 +171,11 @@ class Adafruit_MQTT {
   // to be called before connect() because it is sent as part of the
   // connect control packet.
   bool will(const char *topic, const char *payload, uint8_t qos = 0, uint8_t retain = 0);
-  bool will(const __FlashStringHelper *topic, const char *payload, uint8_t qos = 0, uint8_t retain = 0) {
-    return will((const char *)topic, payload, qos, retain);
-  }
 
   // Publish a message to a topic using the specified QoS level.  Returns true
   // if the message was published, false otherwise.
-  // The topic must be stored in PROGMEM. It can either be a
-  // char*, or a __FlashStringHelper* (the result of the F() macro).
   bool publish(const char *topic, const char *payload, uint8_t qos = 0);
   bool publish(const char *topic, uint8_t *payload, uint16_t bLen, uint8_t qos = 0);
-  bool publish(const __FlashStringHelper *topic, const char *payload, uint8_t qos = 0) {
-    return publish((const char *)topic, payload, qos);
-  }
 
   // Add a subscription to receive messages for a topic.  Returns true if the
   // subscription could be added or was already present, false otherwise.
@@ -258,7 +251,6 @@ class Adafruit_MQTT {
 class Adafruit_MQTT_Publish {
  public:
   Adafruit_MQTT_Publish(Adafruit_MQTT *mqttserver, const char *feed, uint8_t qos = 0);
-  Adafruit_MQTT_Publish(Adafruit_MQTT *mqttserver, const __FlashStringHelper *feed, uint8_t qos = 0);
 
   bool publish(const char *s);
   bool publish(double f, uint8_t precision=2);  // Precision controls the minimum number of digits after decimal.
@@ -277,11 +269,11 @@ private:
 class Adafruit_MQTT_Subscribe {
  public:
   Adafruit_MQTT_Subscribe(Adafruit_MQTT *mqttserver, const char *feedname, uint8_t q=0);
-  Adafruit_MQTT_Subscribe(Adafruit_MQTT *mqttserver, const __FlashStringHelper *feedname, uint8_t q=0);
 
   void setCallback(SubscribeCallbackUInt32Type callb);
   void setCallback(SubscribeCallbackDoubleType callb);
   void setCallback(SubscribeCallbackBufferType callb);
+  void setCallback(AdafruitIO_Feed *io, SubscribeCallbackIOType callb);
   void removeCallback(void);
 
   const char *topic;
@@ -295,6 +287,9 @@ class Adafruit_MQTT_Subscribe {
   SubscribeCallbackUInt32Type callback_uint32t;
   SubscribeCallbackDoubleType callback_double;
   SubscribeCallbackBufferType callback_buffer;
+  SubscribeCallbackIOType     callback_io;
+
+  AdafruitIO_Feed *io_feed;
 
  private:
   Adafruit_MQTT *mqtt;
