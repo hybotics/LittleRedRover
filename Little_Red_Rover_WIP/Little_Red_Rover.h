@@ -41,7 +41,7 @@
 #define ONBOARD_LED                 13
 #define BLINKTIME                   500
 #define BLINKVBAT                   150
-#define VBAT_ENABLED                false
+#define VBAT_ENABLED                true
 #define VBAT_PIN                    A7
 #define VBAT_MIN                    (3.55)
 
@@ -55,7 +55,7 @@
 
 #define STARTDELAYMS                6000
 
-#define DEBUG                       false
+#define DEBUG                       true
 
 #if DEBUG
 #define VERBOSE_MODE                true  // If set to 'true' enables Bluefruit debug output
@@ -234,6 +234,13 @@ enum Distance {
 	Farthest,
 };
 
+enum TurnType {
+  Left,
+  Right,
+  Pivot,
+  None,
+};
+
 struct DistanceReading {
 	Distance dist;
 
@@ -263,8 +270,10 @@ struct HeatSensor {
 };
 
 enum MotorLocation {
-	Left,
-	Right,
+	FrontLeft,
+	FrontRight,
+  RearLeft,
+  RearRight,
 };
 
 struct Motor {
