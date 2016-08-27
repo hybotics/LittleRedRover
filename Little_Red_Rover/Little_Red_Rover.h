@@ -234,6 +234,13 @@ enum Distance {
 	Farthest,
 };
 
+enum TurnType {
+  Left,
+  Right,
+  Pivot,
+  None,
+};
+
 struct DistanceReading {
 	Distance dist;
 
@@ -263,8 +270,10 @@ struct HeatSensor {
 };
 
 enum MotorLocation {
-	Left,
-	Right,
+	FrontLeft,
+	FrontRight,
+  RearLeft,
+  RearRight,
 };
 
 struct Motor {

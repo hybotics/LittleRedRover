@@ -79,6 +79,8 @@ uint8_t rightMSpeed = MAXSPEED / 4;
 uint8_t lastLeftSpeed = leftMSpeed;
 uint8_t lastRightSpeed = rightMSpeed;
 
+enum TurnType turning = None;
+
 bool autonomous = false;
 bool pivoting = true;
 
