@@ -1,32 +1,35 @@
 /*********************************************************************
-  This is an example for our nRF51822 based Bluefruit LE modules
+    This is an example for our nRF51822 based Bluefruit LE modules
 
-  Modified to drive a 3-wheeled BLE Robot Rover! by http://james.devi.to
+    Modified to drive a 3-wheeled BLE Robot Rover! by http://james.devi.to
 
-  Pick one up today in the Adafruit shop!
+    Pick one up today in the Adafruit shop!
 
-  Adafruit invests time and resources providing this open source code,
-  please support Adafruit and open-source hardware by purchasing
-  products from Adafruit!
+    Adafruit invests time and resources providing this open source code,
+        please support Adafruit and open-source hardware by purchasing
+        products from Adafruit!
 
-  MIT license, check LICENSE for more information
-  All text above, and the splash screen below must be included in
-  any redistribution.
+    MIT license, check LICENSE for more information.
+    All text above, and the splash screen below must be included in
+        any redistribution.
 
-  16-Jul-2016: Modified extensively by geekguy@hybotics.org
-  > Added speed control - slow down is button 1, speed up is button
-      2, Stop is button 4. The rover now moves until stopped.
-  > Motion and speed control is now done with just 4 buttons. The
-      forward and reverse buttons double as speed control. Turning
-      is not considered movement because the rover stays in place.
-  18-Jul-2016:
-  > Added switch to toggle between Autonomous Operation and Manual
-      Control. This was a pretty extensive modification.
-  08-Aug-2016:
-  > Added a pivotMode to switch between pivoting and gradual turning
-  27-Aug-2016:
-  > Removed the pibotMode switch, and replaced it with an enum TurnType
-  > Added the ability to control the rate of a gradual turn.
+    16-Jul-2016: Modified extensively by geekguy@hybotics.org
+        Added speed control - slow down is button 1, speed up is button
+            2, Stop is button 4. The rover now moves until stopped.
+        Motion and speed control is now done with just 4 buttons. The
+            forward and reverse buttons double as speed control. Turning
+            is not considered movement because the rover stays in place.
+
+    18-Jul-2016:
+        Added switch to toggle between Autonomous Operation and Manual
+        Control. This was a pretty extensive modification.
+
+    08-Aug-2016:
+        Added a pivotMode to switch between pivoting and gradual turning
+
+    27-Aug-2016:
+        Removed the pibotMode switch, and replaced it with an enum TurnType
+        Added the ability to control the rate of a gradual turn.
 *********************************************************************/
 
 #include <Arduino.h>
@@ -46,24 +49,24 @@
 
 #include "Little_Red_Rover.h"
 
-// Create the motor shield object with the default I2C address
+//  Create the motor shield object with the default I2C address
 Adafruit_MotorShield AFMS = Adafruit_MotorShield();
 
-// And connect 2 DC motors to port M3 & M4 !
+//  And connect 2 DC motors to port M3 & M4 !
 Adafruit_DCMotor *L_MOTOR = AFMS.getMotor(4);
 Adafruit_DCMotor *R_MOTOR = AFMS.getMotor(3);
 
-//not used, testing acceleration
-// int accelTime = 200;
+//  Not used, testing acceleration
+//  int accelTime = 200;
 
-//Name your RC here
+//  Name your RC here
 String BROADCAST_NAME = "Little Red Rover WIP";
 
 String BROADCAST_CMD = String("AT+GAPDEVNAME=" + BROADCAST_NAME);
 
 Adafruit_BluefruitLE_SPI ble(BLUEFRUIT_SPI_CS, BLUEFRUIT_SPI_IRQ, BLUEFRUIT_SPI_RST);
 
-// Global variables
+//  Global variables
 int velocity = 0;
 
 float x, y;
@@ -90,19 +93,19 @@ byte lastButton = 0;
 uint8_t buttonNumber = 0;
 boolean buttonPressed = false;
 
-// A small helper
+//  A small helper
 void error(const __FlashStringHelper *err) {
-  Serial.print(F(">>> ERROR: "));
-  Serial.println(err);
-  while (true);
+    Serial.print(F(">>> ERROR: "));
+    Serial.println(err);
+    while (true);
 }
 
-// Function prototypes over in packetparser.cpp
+//  Function prototypes over in packetparser.cpp
 uint8_t readPacket(Adafruit_BLE *ble, uint16_t timeout);
 float parsefloat(uint8_t *buffer);
 void printHex(const uint8_t * data, const uint32_t numBytes);
 
-// The packet buffer
+//  The packet buffer
 extern uint8_t packetbuffer[];
 
 char buf[60];
@@ -115,370 +118,380 @@ char buf[60];
 /**************************************************************************/
 void setup(void) {
 #if DEBUG
-  Serial.begin(115200);
-  delay(5000);
-  Serial.println(F("Hybotics Little Red Rover WIP"));
-  Serial.println();
+    Serial.begin(115200);
+    delay(5000);
+    Serial.println(F("Hybotics Little Red Rover WIP"));
+    Serial.println();
 #endif
 
-  AFMS.begin();  // Create with the default frequency 1.6KHz
+    AFMS.begin();  // Create with the default frequency 1.6KHz
 
-  // Turn on motors
-  L_MOTOR->setSpeed(0);
-  L_MOTOR->run(RELEASE);
+    //    Turn on motors
+    L_MOTOR->setSpeed(0);
+    L_MOTOR->run(RELEASE);
 
-  R_MOTOR->setSpeed(0);
-  R_MOTOR->run(RELEASE);
+    R_MOTOR->setSpeed(0);
+    R_MOTOR->run(RELEASE);
 
-  /* Initialize the module */
-  BLEsetup();
+    //    Initialize the module
+    BLEsetup();
 
-  // Allow some time to place the rover on the floor
-  delay(STARTDELAYMS);
+    //    Allow some time to place the rover on the floor
+    delay(STARTDELAYMS);
 }
 
 void loop(void) {
-  uint8_t len;
-  
-  // Read new packet data
-  len = readPacket(&ble, BLE_READPACKET_TIMEOUT);
+    uint8_t len;
 
-  // Buttons
-  if (packetbuffer[1] == 'B') {
-    buttonNumber = packetbuffer[2] - '0';
-    buttonPressed = packetbuffer[3] - '0';
+    //  Read new packet data
+    len = readPacket(&ble, BLE_READPACKET_TIMEOUT);
 
-    if (buttonPressed and (buttonNumber == 3)) {
-      autonomous = !autonomous;
+    //  Buttons
+    if (packetbuffer[1] == 'B') {
+        buttonNumber = packetbuffer[2] - '0';
+        buttonPressed = packetbuffer[3] - '0';
 
-      if (autonomous) {
+        if (buttonPressed and (buttonNumber == 3)) {
+            autonomous = !autonomous;
+
+            if (autonomous) {
 #if DEBUG
-        Serial.println(F("Autonomous Operation"));
+                Serial.println(F("Autonomous Operation"));
+                Serial.println(F("Stopping motors"));
 #endif
+                stopMotors(0);
+            } else {
 #if DEBUG
-        Serial.println(F("Stopping motors"));
+                Serial.println(F("Manual Control"));
 #endif
-        stopMotors(0);
-      } else {
-#if DEBUG
-        Serial.println(F("Manual Control"));
-#endif
-      }
-    }
-  }
-
-  if (autonomous) {
-    // Code for autonomous operation goes here
-  } else {
-    // Read from Accelerometer input
-    if ( accelMode() ) {
-      lastAccelPacket = millis();
-      modeToggle = true;
-      return;
-    }
-  
-    // Stop motors if accelerometer data is turned off (100ms timeout)
-    if ( ((millis() - lastAccelPacket) > 100) and (modeToggle) ) {
-      L_MOTOR->run(RELEASE);
-      R_MOTOR->run(RELEASE);
-      modeToggle = false;
-
-      return;
+            }
+        }
     }
 
-    if ( !modeToggle ) {
-      buttonMode();
+    if (autonomous) {
+        //  Code for autonomous operation goes here
+    } else {
+        // Read from Accelerometer input
+        if ( accelMode() ) {
+            lastAccelPacket = millis();
+            modeToggle = true;
+            return;
+        }
+
+        //  Stop motors if accelerometer data is turned off (100ms timeout)
+        if ( ((millis() - lastAccelPacket) > 100) and (modeToggle) ) {
+            L_MOTOR->run(RELEASE);
+            R_MOTOR->run(RELEASE);
+            modeToggle = false;
+
+            return;
+        }
+
+        if ( !modeToggle ) {
+            buttonMode();
+        }
     }
-  }
 }
 
 bool accelMode() {
-  if (packetbuffer[1] == 'A') {
-    x = parsefloat( packetbuffer + 2 );
-    y = parsefloat( packetbuffer + 6 );
+    if (packetbuffer[1] == 'A') {
+        x = parsefloat( packetbuffer + 2 );
+        y = parsefloat( packetbuffer + 6 );
 
-    if ( x <= -0.55 ) {
-      x += 0.55;
-      x *= -100.0;
-      L_MOTOR->run( BACKWARD );
-      R_MOTOR->run( BACKWARD );
+        if ( x <= -0.55 ) {
+            x += 0.55;
+            x *= -100.0;
+            L_MOTOR->run( BACKWARD );
+            R_MOTOR->run( BACKWARD );
 
-      if ( x >= 45 ) {
-        x = 45;
-      }
+            if ( x >= 45 ) {
+                x = 45;
+            }
 
-      if ( x <= 0 ) {
-        x = 0;
-      }
+            if ( x <= 0 ) {
+                x = 0;
+            }
 
-      velocity = map( x, 0, 45, 0 , 255 );
+            velocity = map( x, 0, 45, 0 , 255 );
 #if DEBUG
-      Serial.println(F("Accel: Moving REVERSE"));
+            Serial.println(F("Accel: Moving REVERSE"));
 #endif
-    } else if ( x >= -0.25 ) {
-      x += 0.25;
-      x *= 100;
-      L_MOTOR->run( FORWARD );
-      R_MOTOR->run( FORWARD );
+        } else if ( x >= -0.25 ) {
+            x += 0.25;
+            x *= 100;
+            L_MOTOR->run( FORWARD );
+            R_MOTOR->run( FORWARD );
 
-      if ( x >= 45 ) {
-        x = 45;
-      }
+            if ( x >= 45 ) {
+                x = 45;
+            }
 
-      if ( x <= 0 ) {
-        x = 0;
-      }
+            if ( x <= 0 ) {
+                x = 0;
+            }
 
-      velocity = map( x, 0, 45, 0, 255 );
+            velocity = map( x, 0, 45, 0, 255 );
 #if DEBUG
-      Serial.println(F("Accel: Moving FORWARD"));
+            Serial.println(F("Accel: Moving FORWARD"));
 #endif
-    } else {
-      L_MOTOR->run( RELEASE );
-      R_MOTOR->run( RELEASE );
-      velocity = 0;
+        } else {
+            L_MOTOR->run( RELEASE );
+            R_MOTOR->run( RELEASE );
+            velocity = 0;
 #if DEBUG
-      Serial.println(F("Accel: ALL STOP!"));
+        Serial.println(F("Accel: ALL STOP!"));
 #endif
+        }
+
+        //  Account for L / R accel
+        if ( y >= 0.1 ) {
+            y -= 0.1;
+            y *= 100;
+
+            if ( y >= 50 ) {
+                y = 50;
+            }
+
+            if ( y <= 0 ) {
+                y = 0;
+            }
+
+            L_restrict = fscale( y, 0.0, 50.0, 0.0, 100.0, -4.0 );
+        } else if ( y <= -0.1 ) {
+            y += 0.1;
+            y *= -100;
+
+            if ( y >= 50 ) {
+                y = 50;
+            }
+
+            if ( y <= 0 ) {
+                y = 0;
+            }
+
+            R_restrict = fscale( y, 0.0, 50.0, 0.0, 100.0, -4.0 );
+        } else {
+            L_restrict = 0;
+            R_restrict = 0;
+        }
+
+        float Lpercent = ( 100.0 - L_restrict ) / 100.00 ;
+        float Rpercent = ( 100.0 - R_restrict ) / 100.00 ;
+
+#if DEBUG
+        Serial.print("Accel: x = ");
+        Serial.print( x );
+        Serial.print( ", Lpercent = " );
+        Serial.print( Lpercent );
+        Serial.print( ", velocity = " );
+        Serial.print( velocity );
+        Serial.print( ", Rpercent = " );
+        Serial.println( Rpercent );
+#endif
+
+        L_MOTOR->setSpeed( velocity * Lpercent );
+        R_MOTOR->setSpeed( velocity * Rpercent );
+
+        return true;
     }
 
-    // Account for L / R accel
-    if ( y >= 0.1 ) {
-      y -= 0.1;
-      y *= 100;
-      if ( y >= 50 ) y = 50;
-      if ( y <= 0 ) y = 0;
-
-      L_restrict = fscale( y, 0.0, 50.0, 0.0, 100.0, -4.0 );
-    } else if ( y <= -0.1 ) {
-      y += 0.1;
-      y *= -100;
-      if ( y >= 50 ) y = 50;
-      if ( y <= 0 ) y = 0;
-
-      R_restrict = fscale( y, 0.0, 50.0, 0.0, 100.0, -4.0 );
-    } else {
-      L_restrict = 0;
-      R_restrict = 0;
-    }
-
-    float Lpercent = ( 100.0 - L_restrict ) / 100.00 ;
-    float Rpercent = ( 100.0 - R_restrict ) / 100.00 ;
-
-#if DEBUG
-    Serial.print("Accel: x = ");
-    Serial.print( x );
-    Serial.print( ", Lpercent = " );
-    Serial.print( Lpercent );
-    Serial.print( ", velocity = " );
-    Serial.print( velocity );
-    Serial.print( ", Rpercent = " );
-    Serial.println( Rpercent );
-#endif
-
-    L_MOTOR->setSpeed( velocity * Lpercent );
-    R_MOTOR->setSpeed( velocity * Rpercent );
-
-    return true;
-  }
-
-  return false;
+    return false;
 }
 
 bool buttonMode() {
-  uint8_t speedCheck = 0;
-  static unsigned long lastPress = 0;
+    uint8_t speedCheck = 0;
+    static unsigned long lastPress = 0;
 
-  if (buttonPressed) {
-    lastLeftSpeed = leftMSpeed;
-    lastRightSpeed = rightMSpeed;
+    if (buttonPressed) {
+        lastLeftSpeed = leftMSpeed;
+        lastRightSpeed = rightMSpeed;
 #if DEBUG
-    Serial.print(F("In: isMoving = "));
-    Serial.print(isMoving);
-    Serial.print(F(", turning = "));
+        Serial.print(F("In: isMoving = "));
+        Serial.print(isMoving);
+        Serial.print(F(", turning = "));
 
-    switch (turning) {
-      case None:
-        Serial.print("None");
-        break;
+        switch (turning) {
+            case None:
+                Serial.print("None");
+                break;
 
-      case Left:
-        Serial.print("Left");
-        break;
+            case Left:
+            Serial.print("Left");
+            break;
 
-      case Right:
-        Serial.print("Right");
-        break;
+            case Right:
+                Serial.print("Right");
+                break;
 
-      case Pivot:
-        Serial.print("Pivot");
-        break;
-    }
-#endif
-
-#if DEBUG
-  Serial.print(F(", buttonPressed = "));
-  Serial.print(buttonPressed);
-  Serial.print(F(", buttonNumber = "));
-  Serial.println(buttonNumber);
-#endif
-
-    switch (buttonNumber) {
-      case 1:
-#if DEBUG
-        Serial.println(F("*** Unassigned"));
-#endif
-        break;
-
-      case 2:
-        if (turning == Pivot) {
-          turning = None;
-        } else {
-          turning = Pivot;
-        }
-#if DEBUG
-        if (turning == Pivot) {
-         Serial.println(F("*** Pivoting to turn"));
-        } else {
-         Serial.println(F("*** Gradual turning"));
+            case Pivot:
+                Serial.print("Pivot");
+                break;
         }
 #endif
-        break;
-
-      case 3:
-#if DEBUG
-        Serial.println(F("*** Autonomous/Manual Toggle"));
-#endif
-        break;
-
-      case 4:
-        stopMotors(0);
-#if DEBUG
-        Serial.println(F("*** ALL STOP!"));
-#endif
-        break;
-    
-      case 5:
-        speedCheck = MAXSPEED - SPEEDINCR;
-      
-        if (isMoving and (turning == Pivot) and (leftMSpeed < speedCheck) and (rightMSpeed < speedCheck)) {
-          leftMSpeed += SPEEDINCR;
-          rightMSpeed += SPEEDINCR;
 
 #if DEBUG
-          Serial.println(F("*** Speeding Up"));
+        Serial.print(F(", buttonPressed = "));
+        Serial.print(buttonPressed);
+        Serial.print(F(", buttonNumber = "));
+        Serial.println(buttonNumber);
 #endif
-        } else if ((turning == Left) and (rightMSpeed < speedCheck)) {
-          rightMSpeed += SPEEDINCR;
-        } else if ((turning == Right) and (leftMSpeed < speedCheck)) {
-          leftMSpeed += SPEEDINCR;
-        } else {
-          L_MOTOR->run(FORWARD);
-          R_MOTOR->run(FORWARD);
-      
-          isMoving = true;
+
+        switch (buttonNumber) {
+            case 1:
 #if DEBUG
-          Serial.println(F("*** Moving FORWARD"));
+                Serial.println(F("*** Unassigned"));
 #endif
+                break;
+
+            case 2:
+                if (turning == Pivot) {
+                    turning = None;
+                } else {
+                    turning = Pivot;
+                }
+#if DEBUG
+                if (turning == Pivot) {
+                    Serial.println(F("*** Pivoting to turn"));
+                } else {
+                    Serial.println(F("*** Gradual turning"));
+                }
+#endif
+                break;
+
+            case 3:
+#if DEBUG
+                Serial.println(F("*** Autonomous/Manual Toggle"));
+#endif
+                break;
+
+            case 4:
+                stopMotors(0);
+#if DEBUG
+                Serial.println(F("*** ALL STOP!"));
+#endif
+                break;
+
+            case 5:
+                speedCheck = MAXSPEED - SPEEDINCR;
+
+                if (isMoving and (turning == Pivot) and (leftMSpeed < speedCheck) and (rightMSpeed < speedCheck)) {
+                    leftMSpeed += SPEEDINCR;
+                    rightMSpeed += SPEEDINCR;
+
+#if DEBUG
+                    Serial.println(F("*** Speeding Up"));
+#endif
+                } else if ((turning == Left) and (rightMSpeed < speedCheck)) {
+                    rightMSpeed += SPEEDINCR;
+                } else if ((turning == Right) and (leftMSpeed < speedCheck)) {
+                    leftMSpeed += SPEEDINCR;
+                } else {
+                    L_MOTOR->run(FORWARD);
+                    R_MOTOR->run(FORWARD);
+
+                    isMoving = true;
+#if DEBUG
+                    Serial.println(F("*** Moving FORWARD"));
+#endif
+                }
+                break;
+
+            case 6:
+                speedCheck = MINSPEED + SPEEDINCR;
+
+                if (isMoving and (turning == Pivot) and (leftMSpeed > speedCheck) and (rightMSpeed > speedCheck)) {
+                    leftMSpeed -= SPEEDINCR;
+                    rightMSpeed -= SPEEDINCR;
+
+#if DEBUG
+                    Serial.println(F("*** Slowing Down"));
+#endif
+                } else if ((turning == Left) and (rightMSpeed > speedCheck)) {
+                    rightMSpeed -= SPEEDINCR;
+                } else if ((turning == Right) and (leftMSpeed > speedCheck)) {
+                    leftMSpeed -= SPEEDINCR;
+                } else {
+                    L_MOTOR->run(BACKWARD);
+                    R_MOTOR->run(BACKWARD);
+
+                    isMoving = true;
+#if DEBUG
+                    Serial.println(F("*** Moving in REVERSE"));
+#endif
+                }
+                break;
+
+            case 7:
+                if (turning == Pivot) {
+                    stopMotors(250);
+
+                    L_MOTOR->run(BACKWARD);
+                    R_MOTOR->run(FORWARD);
+                } else {
+                    speedCheck = MAXSPEED - TURNINCR;
+                    turning = Left;
+
+                    if (rightMSpeed < speedCheck) {
+                        rightMSpeed += TURNINCR;
+                    }
+                }
+
+                isMoving = false;
+
+#if DEBUG
+                Serial.println(F("*** Turning LEFT"));
+#endif
+                break;
+
+            case 8:
+                if (turning == Pivot) {
+                    stopMotors(250);
+
+                    L_MOTOR->run(FORWARD);
+                    R_MOTOR->run(BACKWARD);
+
+                    isMoving = false;
+                } else {
+                    speedCheck = MAXSPEED - TURNINCR;
+                    turning = Right;
+
+                    if (leftMSpeed < speedCheck) {
+                        leftMSpeed += TURNINCR;
+                    }
+
+                    isMoving = true;
+                }
+
+#if DEBUG
+                Serial.println(F("*** Turning RIGHT"));
+#endif
+                break;
         }
-        break;
-    
-      case 6:
-        speedCheck = MINSPEED + SPEEDINCR;
-      
-        if (isMoving and (turning == Pivot) and (leftMSpeed > speedCheck) and (rightMSpeed > speedCheck)) {
-          leftMSpeed -= SPEEDINCR;
-          rightMSpeed -= SPEEDINCR;
-  
-#if DEBUG
-          Serial.println(F("*** Slowing Down"));
-#endif
-        } else if ((turning == Left) and (rightMSpeed > speedCheck)) {
-          rightMSpeed -= SPEEDINCR;
-        } else if ((turning == Right) and (leftMSpeed > speedCheck)) {
-          leftMSpeed -= SPEEDINCR;
-        } else {
-          L_MOTOR->run(BACKWARD);
-          R_MOTOR->run(BACKWARD);
-      
-          isMoving = true;
-#if DEBUG
-          Serial.println(F("*** Moving REVERSE"));
-#endif
-        }
-        break;
-    
-      case 7:
-        if (turning == Pivot) {
-          stopMotors(250);
-          
-          L_MOTOR->run(BACKWARD);
-          R_MOTOR->run(FORWARD);
-        } else {
-          speedCheck = MAXSPEED - TURNINCR;
-          turning = Left;
-        
-          if (rightMSpeed < speedCheck) {
-            rightMSpeed += TURNINCR;
-          }
-        }
 
-        isMoving = false;
+        lastButton = buttonNumber;
+        lastPress = millis();
 
 #if DEBUG
-        Serial.println(F("*** Turning LEFT"));
-#endif
-        break;
-      
-      case 8:
-        if (turning == Pivot) {
-          stopMotors(250);
-  
-          L_MOTOR->run(FORWARD);
-          R_MOTOR->run(BACKWARD);
-        
-          isMoving = false;
-        } else {
-          speedCheck = MAXSPEED - TURNINCR;
-          turning = Right;
-        
-          if (leftMSpeed < speedCheck) {
-            leftMSpeed += TURNINCR;
-          }
-        
-          isMoving = true;
-        }
-  
-#if DEBUG
-         Serial.println(F("*** Turning RIGHT"));
-#endif
-         break;
-    }
+        Serial.print(F("Out: isMoving = "));
+        Serial.println(isMoving);
+        Serial.print(F(", turning = "));
 
-    lastButton = buttonNumber;
-    lastPress = millis();
+        switch (turning) {
+            case None:
+            Serial.print("None");
+            break;
 
-#if DEBUG
-    Serial.print(F("Out: isMoving = "));
-    Serial.println(isMoving);
-    Serial.print(F(", turning = "));
+        case Left:
+            Serial.print("Left");
+            break;
 
-    switch (turning) {
-      case None:
-        Serial.print("None");
-        break;
+            case Right:
+            Serial.print("Right");
+            break;
 
-      case Left:
-        Serial.print("Left");
-        break;
-
-      case Right:
-        Serial.print("Right");
-        break;
-
-      case Pivot:
-        Serial.print("Pivot");
-        break;
+        case Pivot:
+            Serial.print("Pivot");
+            break;
     }
 
     Serial.print(F("Speed: Left = "));
@@ -505,7 +518,7 @@ bool buttonMode() {
     }
 
     return true;
-  }
+}
 
   // if(isMoving){
   // unsigned long timeSincePress = millis() - lastPress;
@@ -693,10 +706,10 @@ float fscale( float inputValue,  float originalMin, float originalMax, float new
 String leftZeroPadString (String st, uint8_t nrPlaces) {
   uint8_t i, len;
   String newStr = st;
-  
+
   if (newStr.length() < nrPlaces) {
     len = st.length();
-  
+
     for (i = len; i < nrPlaces; i++) {
       newStr = String("0" + newStr);
     }
@@ -717,7 +730,7 @@ long microsecondsToInches (long microseconds) {
 
     See: http://www.parallax.com/dl/docs/prod/acc/28015-PING-v1.3.pdf
   */
-  
+
   return microseconds / 74 / 2;
 }
 
@@ -776,11 +789,11 @@ void stopMotors (int ms) {
   if (ms > 0) {
     delay(ms);
   }
-      
+
   isMoving = false;
 }
 
-/* 
+/*
   Function to read a value from a GP2Y0A21YK0F infrared distance sensor and return a
     distance value in centimeters.
 
@@ -812,7 +825,7 @@ float readIR (byte sensorNr) {
 }
 
 /*
-  Ping))) Sensor 
+  Ping))) Sensor
 
   This routine reads a PING))) ultrasonic rangefinder and returns the
     distance to the closest object in range. To do this, it sends a pulse
@@ -870,9 +883,8 @@ int readPING (byte sensorNr, bool units=true) {
     //  Return result in inches.
     result = microsecondsToInches(duration);
   }
- 
+
   delay(100);
-  
+
   return result;
 }
-
